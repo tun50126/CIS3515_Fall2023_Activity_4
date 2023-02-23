@@ -1,5 +1,6 @@
 package edu.temple.activity4
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -25,23 +26,30 @@ class MainActivity : AppCompatActivity() {
         // Verify correctness by examining array values.
         val textSizes = Array(20){(it + 1) * 5}
 
-        for(i in 0 until textSizes.size)
-            Log.d("Array Values", textSizes[i].toString())
-
-        textSizeSelector.adapter = TextSizeAdapter(textSizes)
-        textSizeSelector.layoutManager = LinearLayoutManager(this)
-
+        with (findViewById(R.id.textSizeSelectorRecyclerView) as RecyclerView) {
+            adapter = TextSizeAdapter(textSizes) {
+                val intent = Intent(this@MainActivity, SecondActivity::class.java)
+                intent.putExtra("key", it)
+                startActivity(intent)
+            }
+            layoutManager = LinearLayoutManager(this@MainActivity)
+        }
     }
 }
 
 
 /* Convert to RecyclerView.Adapter */
-class TextSizeAdapter(_textSizes : Array<Int>) : RecyclerView.Adapter<TextSizeAdapter.TextSizeViewHolder>() {
+class TextSizeAdapter(_textSizes : Array<Int>, _callback: (Float) -> Unit) : RecyclerView.Adapter<TextSizeAdapter.TextSizeViewHolder>() {
 
     private val textSizes = _textSizes
+    val callback = _callback
 
-    class TextSizeViewHolder(view : TextView) : RecyclerView.ViewHolder (view) {
+    inner class TextSizeViewHolder(view : TextView) : RecyclerView.ViewHolder (view) {
         val textView = view
+
+        init {
+            textView.setOnClickListener { callback(textSizes[adapterPosition].toFloat()) }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TextSizeViewHolder {
